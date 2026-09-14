@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Álbum pessoal de fotos e momentos especiais."
+    >
+
+    <title>Meus Momentos 📸</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+</head>
+
+<body>
+
+    <!-- =====================================================
+         CABEÇALHO
+    ====================================================== -->
+
+    <header class="topo">
+
+        <div class="logo-area">
+
+            <div class="logo-foto">
+                📸
+            </div>
+
+            <div>
+                <h1>Meus Momentos</h1>
+
+                <p>
+                    Minhas viagens, lugares e lembranças ❤️
+                </p>
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         CONTEÚDO PRINCIPAL
+    ====================================================== -->
+
+    <main class="conteudo">
+
+        <section class="apresentacao">
+
+            <span class="icone-camera">
+                📷
+            </span>
+
+            <h2>
+                Minhas Memórias
+            </h2>
+
+            <p>
+                Um cantinho especial para guardar
+                minhas fotos e momentos inesquecíveis.
+            </p>
+
+        </section>
+
+
+        <!-- =================================================
+             ÁLBUNS
+        ================================================== -->
+
+        <section class="albuns">
+
+            <h2 class="titulo-secao">
+                Meus lugares
+            </h2>
+
+            <div
+                id="listaAlbuns"
+                class="grade-albuns"
+            >
+
+                <!--
+                    Os 15 lugares serão criados
+                    automaticamente pelo JavaScript.
+                -->
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =====================================================
+         MODAL DO ÁLBUM
+    ====================================================== -->
+
+    <div
+        id="modalAlbum"
+        class="modal"
+        aria-hidden="true"
+    >
+
+        <div class="modal-conteudo">
+
+            <button
+                type="button"
+                class="fechar-modal"
+                id="fecharModal"
+                aria-label="Fechar"
+            >
+                ×
+            </button>
+
+            <div
+                id="conteudoAlbum"
+                class="conteudo-album"
+            >
+
+                <!-- Conteúdo criado pelo JavaScript -->
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MODAL DE EDIÇÃO
+    ====================================================== -->
+
+    <div
+        id="modalEdicao"
+        class="modal"
+        aria-hidden="true"
+    >
+
+        <div class="modal-conteudo modal-edicao">
+
+            <button
+                type="button"
+                class="fechar-modal"
+                id="fecharEdicao"
+                aria-label="Fechar"
+            >
+                ×
+            </button>
+
+            <h2>
+                ✏️ Editar lugar
+            </h2>
+
+            <div class="campo">
+
+                <label for="nomeLugar">
+                    Nome do lugar
+                </label>
+
+                <input
+                    type="text"
+                    id="nomeLugar"
+                    maxlength="60"
+                    placeholder="Ex.: Búzios"
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="descricaoLugar">
+                    Descrição
+                </label>
+
+                <textarea
+                    id="descricaoLugar"
+                    maxlength="200"
+                    placeholder="Escreva uma pequena descrição..."
+                ></textarea>
+
+            </div>
+
+
+            <div class="acoes-edicao">
+
+                <button
+                    type="button"
+                    id="salvarEdicao"
+                    class="botao-principal"
+                >
+                    💾 Salvar
+                </button>
+
+                <button
+                    type="button"
+                    id="cancelarEdicao"
+                    class="botao-secundario"
+                >
+                    Cancelar
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         RODAPÉ
+    ====================================================== -->
+
+    <footer class="rodape">
+
+        <p>
+            Feito para guardar momentos especiais ❤️
+        </p>
+
+        <span>
+            📸 Meus Momentos
+        </span>
+
+    </footer>
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
