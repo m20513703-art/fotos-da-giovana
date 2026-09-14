@@ -1,0 +1,1121 @@
+/* ============================================================
+   MEUS MOMENTOS — STYLE.CSS
+   Tema: Preto + Rosa
+============================================================ */
+
+/* ============================================================
+   RESET
+============================================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:
+        radial-gradient(
+            circle at top,
+            #2b0b1d 0%,
+            #12070d 35%,
+            #050505 75%
+        );
+
+    color: #ffffff;
+
+    overflow-x: hidden;
+}
+
+
+/* ============================================================
+   VARIÁVEIS
+============================================================ */
+
+:root {
+    --preto: #050505;
+    --preto-2: #0d0d0d;
+    --preto-3: #171717;
+
+    --rosa: #ff2f92;
+    --rosa-claro: #ff69ad;
+    --rosa-escuro: #c91f70;
+
+    --branco: #ffffff;
+    --cinza: #bdbdbd;
+    --cinza-2: #777777;
+
+    --borda: rgba(255, 47, 146, 0.25);
+
+    --sombra:
+        0 15px 45px rgba(0, 0, 0, 0.45);
+
+    --transicao:
+        0.25s ease;
+}
+
+
+/* ============================================================
+   TOPO
+============================================================ */
+
+.topo {
+    width: 100%;
+
+    padding: 24px 6%;
+
+    background:
+        rgba(5, 5, 5, 0.88);
+
+    border-bottom:
+        1px solid var(--borda);
+
+    backdrop-filter: blur(12px);
+
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+
+/* ============================================================
+   LOGO / IDENTIDADE
+============================================================ */
+
+.logo-area {
+    max-width: 1250px;
+
+    margin: 0 auto;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 16px;
+}
+
+.logo-foto {
+    width: 58px;
+    height: 58px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--rosa),
+            var(--rosa-escuro)
+        );
+
+    font-size: 28px;
+
+    box-shadow:
+        0 8px 25px rgba(255, 47, 146, 0.3);
+}
+
+.logo-area h1 {
+    font-size: 1.7rem;
+
+    font-weight: 800;
+
+    letter-spacing: 0.3px;
+}
+
+.logo-area p {
+    margin-top: 4px;
+
+    color: var(--cinza);
+
+    font-size: 0.9rem;
+}
+
+
+/* ============================================================
+   CONTEÚDO
+============================================================ */
+
+.conteudo {
+    width: 100%;
+
+    max-width: 1300px;
+
+    margin: 0 auto;
+
+    padding:
+        55px 6%
+        80px;
+}
+
+
+/* ============================================================
+   APRESENTAÇÃO
+============================================================ */
+
+.apresentacao {
+    text-align: center;
+
+    max-width: 750px;
+
+    margin:
+        0 auto
+        60px;
+}
+
+.icone-camera {
+    display: inline-flex;
+
+    width: 70px;
+    height: 70px;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255, 47, 146, 0.12);
+
+    border:
+        1px solid var(--borda);
+
+    font-size: 32px;
+
+    margin-bottom: 20px;
+
+    box-shadow:
+        0 10px 35px rgba(255, 47, 146, 0.12);
+}
+
+.apresentacao h2 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+
+    margin-bottom: 15px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #ffffff,
+            var(--rosa-claro)
+        );
+
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    color: transparent;
+}
+
+.apresentacao p {
+    color: var(--cinza);
+
+    font-size: 1rem;
+
+    line-height: 1.7;
+}
+
+
+/* ============================================================
+   SEÇÃO DOS ÁLBUNS
+============================================================ */
+
+.titulo-secao {
+    font-size: 1.6rem;
+
+    margin-bottom: 24px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+.titulo-secao::before {
+    content: "";
+
+    width: 5px;
+    height: 28px;
+
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            var(--rosa),
+            var(--rosa-claro)
+        );
+}
+
+
+/* ============================================================
+   GRADE
+============================================================ */
+
+.grade-albuns {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(220px, 1fr)
+        );
+
+    gap: 22px;
+}
+
+
+/* ============================================================
+   CARD DOS ÁLBUNS
+============================================================ */
+
+.album-card {
+    position: relative;
+
+    min-height: 280px;
+
+    border-radius: 22px;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            145deg,
+            #181818,
+            #0a0a0a
+        );
+
+    border:
+        1px solid var(--borda);
+
+    box-shadow:
+        var(--sombra);
+
+    cursor: pointer;
+
+    transition:
+        transform var(--transicao),
+        box-shadow var(--transicao),
+        border-color var(--transicao);
+}
+
+.album-card:hover {
+    transform:
+        translateY(-7px);
+
+    border-color:
+        rgba(255, 47, 146, 0.65);
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.6),
+        0 0 25px rgba(255, 47, 146, 0.08);
+}
+
+
+/* ============================================================
+   CAPA DO ÁLBUM
+============================================================ */
+
+.album-capa {
+    width: 100%;
+
+    height: 100%;
+
+    min-height: 280px;
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            145deg,
+            #252525,
+            #0b0b0b
+        );
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+}
+
+.album-capa img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    transition:
+        transform 0.5s ease;
+}
+
+.album-card:hover
+.album-capa img {
+    transform:
+        scale(1.06);
+}
+
+
+/* ============================================================
+   PLACEHOLDER
+============================================================ */
+
+.album-placeholder {
+    text-align: center;
+
+    padding: 20px;
+
+    color: var(--cinza);
+}
+
+.album-placeholder .icone {
+    font-size: 48px;
+
+    display: block;
+
+    margin-bottom: 12px;
+
+    opacity: 0.7;
+}
+
+.album-placeholder strong {
+    display: block;
+
+    color: #ffffff;
+
+    font-size: 1rem;
+
+    margin-bottom: 5px;
+}
+
+.album-placeholder span {
+    font-size: 0.85rem;
+
+    color: var(--cinza-2);
+}
+
+
+/* ============================================================
+   GRADIENTE SOBRE A FOTO
+============================================================ */
+
+.album-overlay {
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0.95),
+            rgba(0, 0, 0, 0.1) 65%,
+            transparent
+        );
+
+    z-index: 2;
+}
+
+
+/* ============================================================
+   INFORMAÇÕES DO ÁLBUM
+============================================================ */
+
+.album-info {
+    position: absolute;
+
+    left: 18px;
+    right: 18px;
+    bottom: 18px;
+
+    z-index: 3;
+}
+
+.album-info h3 {
+    font-size: 1.2rem;
+
+    margin-bottom: 6px;
+}
+
+.album-info p {
+    color: #d0d0d0;
+
+    font-size: 0.82rem;
+
+    line-height: 1.4;
+}
+
+
+/* ============================================================
+   BOTÃO EDITAR
+============================================================ */
+
+.botao-editar {
+    position: absolute;
+
+    top: 14px;
+    right: 14px;
+
+    z-index: 10;
+
+    width: 40px;
+    height: 40px;
+
+    border: 1px solid
+        rgba(255, 255, 255, 0.18);
+
+    border-radius: 50%;
+
+    background:
+        rgba(0, 0, 0, 0.65);
+
+    color: #ffffff;
+
+    cursor: pointer;
+
+    font-size: 17px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    transition:
+        background var(--transicao),
+        transform var(--transicao),
+        border-color var(--transicao);
+}
+
+.botao-editar:hover {
+    background:
+        var(--rosa);
+
+    border-color:
+        var(--rosa);
+
+    transform:
+        scale(1.08);
+}
+
+
+/* ============================================================
+   MODAL
+============================================================ */
+
+.modal {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 100;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(0, 0, 0, 0.82);
+
+    backdrop-filter:
+        blur(8px);
+}
+
+.modal.ativo {
+    display: flex;
+}
+
+
+/* ============================================================
+   CONTEÚDO MODAL
+============================================================ */
+
+.modal-conteudo {
+    width: 100%;
+
+    max-width: 1000px;
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    position: relative;
+
+    border-radius: 24px;
+
+    padding: 30px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #181818,
+            #090909
+        );
+
+    border:
+        1px solid var(--borda);
+
+    box-shadow:
+        0 30px 90px rgba(0, 0, 0, 0.75);
+}
+
+
+/* ============================================================
+   FECHAR MODAL
+============================================================ */
+
+.fechar-modal {
+    position: absolute;
+
+    top: 15px;
+    right: 15px;
+
+    width: 42px;
+    height: 42px;
+
+    border: 0;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255, 255, 255, 0.08);
+
+    color: #ffffff;
+
+    font-size: 25px;
+
+    cursor: pointer;
+
+    z-index: 20;
+
+    transition:
+        background var(--transicao),
+        transform var(--transicao);
+}
+
+.fechar-modal:hover {
+    background:
+        var(--rosa);
+
+    transform:
+        rotate(90deg);
+}
+
+
+/* ============================================================
+   CONTEÚDO DO ÁLBUM
+============================================================ */
+
+.conteudo-album h2 {
+    padding-right: 50px;
+
+    font-size: 2rem;
+
+    margin-bottom: 8px;
+}
+
+.conteudo-album .descricao {
+    color: var(--cinza);
+
+    line-height: 1.6;
+
+    margin-bottom: 25px;
+}
+
+
+/* ============================================================
+   GALERIA
+============================================================ */
+
+.galeria {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fill,
+            minmax(160px, 1fr)
+        );
+
+    gap: 12px;
+}
+
+.galeria-item {
+    aspect-ratio: 1 / 1;
+
+    overflow: hidden;
+
+    border-radius: 14px;
+
+    background:
+        #111;
+
+    border:
+        1px solid
+        rgba(255, 47, 146, 0.15);
+
+    cursor: pointer;
+
+    transition:
+        transform var(--transicao),
+        border-color var(--transicao);
+}
+
+.galeria-item:hover {
+    transform:
+        scale(1.025);
+
+    border-color:
+        rgba(255, 47, 146, 0.6);
+}
+
+.galeria-item img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    display: block;
+}
+
+
+/* ============================================================
+   MODAL DE EDIÇÃO
+============================================================ */
+
+.modal-edicao {
+    max-width: 520px;
+}
+
+.modal-edicao h2 {
+    margin-bottom: 25px;
+
+    font-size: 1.5rem;
+}
+
+
+/* ============================================================
+   CAMPOS
+============================================================ */
+
+.campo {
+    margin-bottom: 20px;
+}
+
+.campo label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-size: 0.9rem;
+
+    color: #dddddd;
+}
+
+.campo input,
+.campo textarea {
+    width: 100%;
+
+    border: 1px solid
+        rgba(255, 255, 255, 0.12);
+
+    border-radius: 12px;
+
+    padding: 13px 14px;
+
+    background:
+        #101010;
+
+    color: #ffffff;
+
+    outline: none;
+
+    font-family: inherit;
+
+    font-size: 0.95rem;
+
+    transition:
+        border-color var(--transicao),
+        box-shadow var(--transicao);
+}
+
+.campo textarea {
+    min-height: 110px;
+
+    resize: vertical;
+}
+
+.campo input:focus,
+.campo textarea:focus {
+    border-color:
+        var(--rosa);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(255, 47, 146, 0.1);
+}
+
+
+/* ============================================================
+   BOTÕES DE EDIÇÃO
+============================================================ */
+
+.acoes-edicao {
+    display: flex;
+
+    gap: 12px;
+
+    flex-wrap: wrap;
+
+    margin-top: 25px;
+}
+
+.botao-principal,
+.botao-secundario {
+    border: 0;
+
+    border-radius: 12px;
+
+    padding: 13px 20px;
+
+    font-size: 0.95rem;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        transform var(--transicao),
+        opacity var(--transicao);
+}
+
+.botao-principal {
+    background:
+        linear-gradient(
+            135deg,
+            var(--rosa),
+            var(--rosa-escuro)
+        );
+
+    color: #ffffff;
+
+    box-shadow:
+        0 8px 25px
+        rgba(255, 47, 146, 0.22);
+}
+
+.botao-secundario {
+    background:
+        #242424;
+
+    color: #ffffff;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+}
+
+.botao-principal:hover,
+.botao-secundario:hover {
+    transform:
+        translateY(-2px);
+
+    opacity: 0.92;
+}
+
+
+/* ============================================================
+   RODAPÉ
+============================================================ */
+
+.rodape {
+    padding:
+        30px 6%;
+
+    text-align: center;
+
+    border-top:
+        1px solid var(--borda);
+
+    background:
+        rgba(0, 0, 0, 0.45);
+
+    color: var(--cinza);
+}
+
+.rodape p {
+    margin-bottom: 8px;
+
+    font-size: 0.9rem;
+}
+
+.rodape span {
+    color:
+        var(--rosa-claro);
+
+    font-size: 0.82rem;
+}
+
+
+/* ============================================================
+   SCROLLBAR
+============================================================ */
+
+::-webkit-scrollbar {
+    width: 9px;
+}
+
+::-webkit-scrollbar-track {
+    background:
+        #080808;
+}
+
+::-webkit-scrollbar-thumb {
+    background:
+        var(--rosa-escuro);
+
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background:
+        var(--rosa);
+}
+
+
+/* ============================================================
+   SELEÇÃO DE TEXTO
+============================================================ */
+
+::selection {
+    background:
+        var(--rosa);
+
+    color:
+        #ffffff;
+}
+
+
+/* ============================================================
+   RESPONSIVIDADE — TABLET
+============================================================ */
+
+@media (max-width: 768px) {
+
+    .topo {
+        padding:
+            18px 5%;
+    }
+
+    .logo-area {
+        gap: 12px;
+    }
+
+    .logo-foto {
+        width: 50px;
+        height: 50px;
+
+        border-radius: 15px;
+
+        font-size: 23px;
+    }
+
+    .logo-area h1 {
+        font-size: 1.35rem;
+    }
+
+    .logo-area p {
+        font-size: 0.8rem;
+    }
+
+    .conteudo {
+        padding:
+            40px 5%
+            60px;
+    }
+
+    .apresentacao {
+        margin-bottom: 45px;
+    }
+
+    .grade-albuns {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+
+        gap: 14px;
+    }
+
+    .album-card,
+    .album-capa {
+        min-height: 230px;
+    }
+
+    .album-info {
+        left: 13px;
+        right: 13px;
+        bottom: 13px;
+    }
+
+    .album-info h3 {
+        font-size: 1rem;
+    }
+
+    .album-info p {
+        font-size: 0.75rem;
+    }
+
+    .botao-editar {
+        width: 36px;
+        height: 36px;
+
+        top: 10px;
+        right: 10px;
+    }
+
+    .modal-conteudo {
+        padding: 22px;
+
+        border-radius: 19px;
+    }
+
+    .galeria {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+}
+
+
+/* ============================================================
+   RESPONSIVIDADE — CELULAR
+============================================================ */
+
+@media (max-width: 480px) {
+
+    .logo-area h1 {
+        font-size: 1.15rem;
+    }
+
+    .logo-area p {
+        font-size: 0.72rem;
+    }
+
+    .conteudo {
+        padding-top: 32px;
+    }
+
+    .apresentacao {
+        margin-bottom: 35px;
+    }
+
+    .icone-camera {
+        width: 58px;
+        height: 58px;
+
+        font-size: 26px;
+    }
+
+    .apresentacao h2 {
+        font-size: 2rem;
+    }
+
+    .apresentacao p {
+        font-size: 0.9rem;
+    }
+
+    .titulo-secao {
+        font-size: 1.35rem;
+    }
+
+    .grade-albuns {
+        grid-template-columns:
+            1fr;
+    }
+
+    .album-card,
+    .album-capa {
+        min-height: 260px;
+    }
+
+    .modal {
+        padding: 10px;
+    }
+
+    .modal-conteudo {
+        max-height: 94vh;
+
+        padding: 20px 16px;
+
+        border-radius: 18px;
+    }
+
+    .conteudo-album h2 {
+        font-size: 1.55rem;
+    }
+
+    .galeria {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+
+        gap: 8px;
+    }
+
+    .galeria-item {
+        border-radius: 10px;
+    }
+
+    .acoes-edicao {
+        flex-direction: column;
+    }
+
+    .botao-principal,
+    .botao-secundario {
+        width: 100%;
+    }
+}
+
+
+/* ============================================================
+   ACESSIBILIDADE
+============================================================ */
+
+button,
+input,
+textarea {
+    -webkit-tap-highlight-color:
+        transparent;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+    outline:
+        2px solid var(--rosa);
+
+    outline-offset:
+        3px;
+}
