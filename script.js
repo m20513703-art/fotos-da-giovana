@@ -3,6 +3,7 @@
 /* ============================================================
    MEUS MOMENTOS
    SCRIPT PRINCIPAL
+   VERSÃO COM INDEXEDDB
 ============================================================ */
 
 
@@ -11,16 +12,25 @@
 ============================================================ */
 
 const TOTAL_ALBUNS = 15;
+
 const LIMITE_FOTOS_POR_ALBUM = 300;
+
+const NOME_BANCO = "MeusMomentosDB";
+
+const VERSAO_BANCO = 1;
+
+const NOME_TABELA = "albuns";
 
 
 /* ============================================================
-   ESTADO DOS ÁLBUNS
+   ESTADO
 ============================================================ */
 
 let albuns = [];
 
 let albumAtual = null;
+
+let bancoDB = null;
 
 
 /* ============================================================
@@ -59,6 +69,97 @@ const cancelarEdicao =
 
 
 /* ============================================================
+   ABRIR INDEXEDDB
+============================================================ */
+
+function abrirBanco() {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            if (!window.indexedDB) {
+
+                reject(
+                    new Error(
+                        "IndexedDB não está disponível neste navegador."
+                    )
+                );
+
+                return;
+            }
+
+
+            const requisicao =
+                indexedDB.open(
+                    NOME_BANCO,
+                    VERSAO_BANCO
+                );
+
+
+            /* =================================================
+               CRIAR ESTRUTURA DO BANCO
+            ================================================= */
+
+            requisicao.onupgradeneeded =
+                evento => {
+
+                    const db =
+                        evento.target.result;
+
+
+                    if (
+                        !db.objectStoreNames.contains(
+                            NOME_TABELA
+                        )
+                    ) {
+
+                        db.createObjectStore(
+                            NOME_TABELA,
+                            {
+                                keyPath: "id"
+                            }
+                        );
+                    }
+                };
+
+
+            /* =================================================
+               SUCESSO
+            ================================================= */
+
+            requisicao.onsuccess =
+                evento => {
+
+                    bancoDB =
+                        evento.target.result;
+
+
+                    resolve(
+                        bancoDB
+                    );
+                };
+
+
+            /* =================================================
+               ERRO
+            ================================================= */
+
+            requisicao.onerror =
+                () => {
+
+                    reject(
+                        requisicao.error ||
+                        new Error(
+                            "Erro ao abrir o banco."
+                        )
+                    );
+                };
+        }
+    );
+}
+
+
+/* ============================================================
    CRIAR ÁLBUNS INICIAIS
 ============================================================ */
 
@@ -66,18 +167,344 @@ function criarAlbunsIniciais() {
 
     const resultado = [];
 
-    for (let i = 1; i <= TOTAL_ALBUNS; i++) {
+
+    for (
+        let i = 1;
+        i <= TOTAL_ALBUNS;
+        i++
+    ) {
 
         resultado.push({
+
             id: i,
+
             nome: "",
+
             descricao: "",
-            capa: "",
+
+            capa: null,
+
             fotos: []
+
         });
     }
 
+
     return resultado;
+}
+
+
+/* ============================================================
+   SALVAR UM ÁLBUM
+============================================================ */
+
+function salvarAlbum(album) {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            if (!bancoDB) {
+
+                reject(
+                    new Error(
+                        "Banco de dados não está aberto."
+                    )
+                );
+
+                return;
+            }
+
+
+            const transacao =
+                bancoDB.transaction(
+                    NOME_TABELA,
+                    "readwrite"
+                );
+
+
+            const tabela =
+                transacao.objectStore(
+                    NOME_TABELA
+                );
+
+
+            tabela.put(album);
+
+
+            transacao.oncomplete =
+                () => {
+
+                    resolve(
+                        true
+                    );
+                };
+
+
+            transacao.onerror =
+                () => {
+
+                    reject(
+                        transacao.error
+                    );
+                };
+        }
+    );
+}
+
+
+/* ============================================================
+   SALVAR TODOS OS ÁLBUNS
+============================================================ */
+
+function salvarTodosAlbuns() {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            if (!bancoDB) {
+
+                reject(
+                    new Error(
+                        "Banco de dados não está aberto."
+                    )
+                );
+
+                return;
+            }
+
+
+            const transacao =
+                bancoDB.transaction(
+                    NOME_TABELA,
+                    "readwrite"
+                );
+
+
+            const tabela =
+                transacao.objectStore(
+                    NOME_TABELA
+                );
+
+
+            albuns.forEach(
+                album => {
+
+                    tabela.put(
+                        album
+                    );
+                }
+            );
+
+
+            transacao.oncomplete =
+                () => {
+
+                    resolve(
+                        true
+                    );
+                };
+
+
+            transacao.onerror =
+                () => {
+
+                    reject(
+                        transacao.error
+                    );
+                };
+        }
+    );
+}
+
+
+/* ============================================================
+   CARREGAR TODOS OS ÁLBUNS
+============================================================ */
+
+function carregarTodosAlbuns() {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            if (!bancoDB) {
+
+                reject(
+                    new Error(
+                        "Banco de dados não está aberto."
+                    )
+                );
+
+                return;
+            }
+
+
+            const transacao =
+                bancoDB.transaction(
+                    NOME_TABELA,
+                    "readonly"
+                );
+
+
+            const tabela =
+                transacao.objectStore(
+                    NOME_TABELA
+                );
+
+
+            const requisicao =
+                tabela.getAll();
+
+
+            requisicao.onsuccess =
+                () => {
+
+                    resolve(
+                        requisicao.result || []
+                    );
+                };
+
+
+            requisicao.onerror =
+                () => {
+
+                    reject(
+                        requisicao.error
+                    );
+                };
+        }
+    );
+}
+
+
+/* ============================================================
+   PREPARAR ÁLBUNS
+============================================================ */
+
+async function prepararAlbuns() {
+
+    let dados =
+        await carregarTodosAlbuns();
+
+
+    /* ========================================================
+       PRIMEIRO ACESSO
+    ======================================================== */
+
+    if (
+        !Array.isArray(dados) ||
+        dados.length === 0
+    ) {
+
+        albuns =
+            criarAlbunsIniciais();
+
+
+        await salvarTodosAlbuns();
+
+        return;
+    }
+
+
+    albuns =
+        dados;
+
+
+    /* ========================================================
+       GARANTIR OS 15 ÁLBUNS
+    ======================================================== */
+
+    const padrao =
+        criarAlbunsIniciais();
+
+
+    padrao.forEach(
+        albumPadrao => {
+
+            const existente =
+                albuns.find(
+                    album =>
+                        Number(album.id) ===
+                        Number(albumPadrao.id)
+                );
+
+
+            if (!existente) {
+
+                albuns.push(
+                    albumPadrao
+                );
+            }
+        }
+    );
+
+
+    /* ========================================================
+       GARANTIR ESTRUTURA
+    ======================================================== */
+
+    albuns =
+        albuns
+            .slice(
+                0,
+                TOTAL_ALBUNS
+            )
+            .map(
+                album => {
+
+                    return {
+
+                        id:
+                            Number(
+                                album.id
+                            ),
+
+                        nome:
+                            typeof album.nome ===
+                            "string"
+                                ? album.nome
+                                : "",
+
+                        descricao:
+                            typeof album.descricao ===
+                            "string"
+                                ? album.descricao
+                                : "",
+
+                        capa:
+                            album.capa ||
+                            null,
+
+                        fotos:
+                            Array.isArray(
+                                album.fotos
+                            )
+                                ? album.fotos
+                                : []
+                    };
+                }
+            );
+
+
+    /* ========================================================
+       GARANTIR CAPA
+    ======================================================== */
+
+    albuns.forEach(
+        album => {
+
+            if (
+                !album.capa &&
+                album.fotos.length > 0
+            ) {
+
+                album.capa =
+                    album.fotos[0];
+            }
+        }
+    );
+
+
+    await salvarTodosAlbuns();
 }
 
 
@@ -85,11 +512,61 @@ function criarAlbunsIniciais() {
    INICIALIZAÇÃO
 ============================================================ */
 
-function iniciar() {
+async function iniciar() {
 
-    albuns = criarAlbunsIniciais();
+    try {
 
-    renderizarAlbuns();
+        await abrirBanco();
+
+        await prepararAlbuns();
+
+        renderizarAlbuns();
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao iniciar o sistema:",
+            erro
+        );
+
+
+        alert(
+            "Não foi possível abrir o armazenamento das fotos neste navegador."
+        );
+    }
+}
+
+
+/* ============================================================
+   CRIAR URL TEMPORÁRIA DA FOTO
+============================================================ */
+
+function criarUrlFoto(foto) {
+
+    if (
+        foto instanceof Blob
+    ) {
+
+        return URL.createObjectURL(
+            foto
+        );
+    }
+
+
+    /*
+     * Compatibilidade com fotos antigas
+     * que eventualmente estejam em texto.
+     */
+
+    if (
+        typeof foto === "string"
+    ) {
+
+        return foto;
+    }
+
+
+    return "";
 }
 
 
@@ -103,193 +580,276 @@ function renderizarAlbuns() {
         return;
     }
 
-    listaAlbuns.innerHTML = "";
 
-    albuns.forEach(album => {
-
-        const card =
-            document.createElement("article");
-
-        card.className =
-            "album-card";
-
-        card.dataset.id =
-            album.id;
+    listaAlbuns.innerHTML =
+        "";
 
 
-        /* ====================================================
-           CAPA
-        ==================================================== */
+    albuns.forEach(
+        album => {
 
-        const capa =
-            document.createElement("div");
-
-        capa.className =
-            "album-capa";
+            const card =
+                document.createElement(
+                    "article"
+                );
 
 
-        if (album.capa) {
+            card.className =
+                "album-card";
 
-            const imagem =
-                document.createElement("img");
 
-            imagem.src =
-                album.capa;
+            card.dataset.id =
+                album.id;
 
-            imagem.alt =
+
+            /* =================================================
+               CAPA
+            ================================================= */
+
+            const capa =
+                document.createElement(
+                    "div"
+                );
+
+
+            capa.className =
+                "album-capa";
+
+
+            if (album.capa) {
+
+                const imagem =
+                    document.createElement(
+                        "img"
+                    );
+
+
+                imagem.src =
+                    criarUrlFoto(
+                        album.capa
+                    );
+
+
+                imagem.alt =
+                    album.nome ||
+                    `Álbum ${album.id}`;
+
+
+                capa.appendChild(
+                    imagem
+                );
+
+            } else {
+
+                const placeholder =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                placeholder.className =
+                    "album-placeholder";
+
+
+                const icone =
+                    document.createElement(
+                        "span"
+                    );
+
+
+                icone.className =
+                    "icone";
+
+
+                icone.textContent =
+                    "📸";
+
+
+                const nome =
+                    document.createElement(
+                        "strong"
+                    );
+
+
+                nome.textContent =
+                    album.nome ||
+                    "Novo lugar";
+
+
+                const texto =
+                    document.createElement(
+                        "span"
+                    );
+
+
+                texto.textContent =
+                    "Clique para adicionar suas fotos";
+
+
+                placeholder.appendChild(
+                    icone
+                );
+
+
+                placeholder.appendChild(
+                    nome
+                );
+
+
+                placeholder.appendChild(
+                    texto
+                );
+
+
+                capa.appendChild(
+                    placeholder
+                );
+            }
+
+
+            /* =================================================
+               OVERLAY
+            ================================================= */
+
+            const overlay =
+                document.createElement(
+                    "div"
+                );
+
+
+            overlay.className =
+                "album-overlay";
+
+
+            /* =================================================
+               INFORMAÇÕES
+            ================================================= */
+
+            const info =
+                document.createElement(
+                    "div"
+                );
+
+
+            info.className =
+                "album-info";
+
+
+            const titulo =
+                document.createElement(
+                    "h3"
+                );
+
+
+            titulo.textContent =
                 album.nome ||
-                `Álbum ${album.id}`;
+                `Lugar ${album.id}`;
 
-            capa.appendChild(
-                imagem
+
+            const descricao =
+                document.createElement(
+                    "p"
+                );
+
+
+            descricao.textContent =
+                album.descricao ||
+                `${album.fotos.length} foto(s)`;
+
+
+            info.appendChild(
+                titulo
             );
 
-        } else {
 
-            const placeholder =
-                document.createElement("div");
+            info.appendChild(
+                descricao
+            );
 
-            placeholder.className =
-                "album-placeholder";
 
-            placeholder.innerHTML = `
-                <span class="icone">📸</span>
+            /* =================================================
+               BOTÃO EDITAR
+            ================================================= */
 
-                <strong>
-                    ${album.nome || "Novo lugar"}
-                </strong>
+            const botaoEditar =
+                document.createElement(
+                    "button"
+                );
 
-                <span>
-                    Clique para adicionar suas fotos
-                </span>
-            `;
 
-            capa.appendChild(
-                placeholder
+            botaoEditar.type =
+                "button";
+
+
+            botaoEditar.className =
+                "botao-editar";
+
+
+            botaoEditar.textContent =
+                "✏️";
+
+
+            botaoEditar.title =
+                "Editar lugar";
+
+
+            botaoEditar.addEventListener(
+                "click",
+                evento => {
+
+                    evento.stopPropagation();
+
+                    abrirEdicao(
+                        album.id
+                    );
+                }
+            );
+
+
+            /* =================================================
+               MONTAR CARD
+            ================================================= */
+
+            card.appendChild(
+                capa
+            );
+
+
+            card.appendChild(
+                overlay
+            );
+
+
+            card.appendChild(
+                info
+            );
+
+
+            card.appendChild(
+                botaoEditar
+            );
+
+
+            /* =================================================
+               ABRIR
+            ================================================= */
+
+            card.addEventListener(
+                "click",
+                () => {
+
+                    abrirAlbum(
+                        album.id
+                    );
+                }
+            );
+
+
+            listaAlbuns.appendChild(
+                card
             );
         }
-
-
-        /* ====================================================
-           OVERLAY
-        ==================================================== */
-
-        const overlay =
-            document.createElement("div");
-
-        overlay.className =
-            "album-overlay";
-
-
-        /* ====================================================
-           INFORMAÇÕES
-        ==================================================== */
-
-        const info =
-            document.createElement("div");
-
-        info.className =
-            "album-info";
-
-
-        const titulo =
-            document.createElement("h3");
-
-        titulo.textContent =
-            album.nome ||
-            `Lugar ${album.id}`;
-
-
-        const descricao =
-            document.createElement("p");
-
-        descricao.textContent =
-            album.descricao ||
-            `${album.fotos.length} foto(s)`;
-
-
-        info.appendChild(
-            titulo
-        );
-
-        info.appendChild(
-            descricao
-        );
-
-
-        /* ====================================================
-           BOTÃO EDITAR
-        ==================================================== */
-
-        const botaoEditar =
-            document.createElement("button");
-
-        botaoEditar.type =
-            "button";
-
-        botaoEditar.className =
-            "botao-editar";
-
-        botaoEditar.innerHTML =
-            "✏️";
-
-        botaoEditar.title =
-            "Editar lugar";
-
-
-        botaoEditar.addEventListener(
-            "click",
-            evento => {
-
-                evento.stopPropagation();
-
-                abrirEdicao(
-                    album.id
-                );
-            }
-        );
-
-
-        /* ====================================================
-           MONTAR CARD
-        ==================================================== */
-
-        card.appendChild(
-            capa
-        );
-
-        card.appendChild(
-            overlay
-        );
-
-        card.appendChild(
-            info
-        );
-
-        card.appendChild(
-            botaoEditar
-        );
-
-
-        /* ====================================================
-           ABRIR ÁLBUM
-        ==================================================== */
-
-        card.addEventListener(
-            "click",
-            () => {
-
-                abrirAlbum(
-                    album.id
-                );
-            }
-        );
-
-
-        listaAlbuns.appendChild(
-            card
-        );
-    });
+    );
 }
 
 
@@ -302,28 +862,35 @@ function abrirAlbum(id) {
     const album =
         albuns.find(
             item =>
-                item.id === id
+                Number(item.id) ===
+                Number(id)
         );
+
 
     if (!album) {
         return;
     }
 
+
     albumAtual =
-        id;
+        album.id;
+
 
     renderizarConteudoAlbum(
         album
     );
 
+
     modalAlbum.classList.add(
         "ativo"
     );
+
 
     modalAlbum.setAttribute(
         "aria-hidden",
         "false"
     );
+
 
     document.body.style.overflow =
         "hidden";
@@ -334,72 +901,111 @@ function abrirAlbum(id) {
    RENDERIZAR CONTEÚDO DO ÁLBUM
 ============================================================ */
 
-function renderizarConteudoAlbum(album) {
+function renderizarConteudoAlbum(
+    album
+) {
 
-    conteudoAlbum.innerHTML = "";
+    conteudoAlbum.innerHTML =
+        "";
 
 
-    /* ====================================================
+    /* ========================================================
        TÍTULO
-    ==================================================== */
+    ======================================================== */
 
     const titulo =
-        document.createElement("h2");
+        document.createElement(
+            "h2"
+        );
+
 
     titulo.textContent =
         album.nome ||
         `Lugar ${album.id}`;
 
 
-    /* ====================================================
+    /* ========================================================
        DESCRIÇÃO
-    ==================================================== */
+    ======================================================== */
 
     const descricao =
-        document.createElement("p");
+        document.createElement(
+            "p"
+        );
+
 
     descricao.className =
         "descricao";
+
 
     descricao.textContent =
         album.descricao ||
         "Este álbum ainda não possui uma descrição.";
 
 
-    /* ====================================================
-       INPUT DE FOTO
-    ==================================================== */
+    /* ========================================================
+       CONTADOR
+    ======================================================== */
+
+    const contador =
+        document.createElement(
+            "p"
+        );
+
+
+    contador.className =
+        "descricao";
+
+
+    contador.textContent =
+        `${album.fotos.length} / ${LIMITE_FOTOS_POR_ALBUM} fotos`;
+
+
+    /* ========================================================
+       INPUT
+    ======================================================== */
 
     const inputFoto =
-        document.createElement("input");
+        document.createElement(
+            "input"
+        );
+
 
     inputFoto.type =
         "file";
 
+
     inputFoto.accept =
         "image/*";
 
+
     inputFoto.multiple =
         true;
+
 
     inputFoto.style.display =
         "none";
 
 
-    /* ====================================================
-       BOTÃO ADICIONAR FOTO
-    ==================================================== */
+    /* ========================================================
+       BOTÃO ADICIONAR
+    ======================================================== */
 
     const botaoAdicionar =
-        document.createElement("button");
+        document.createElement(
+            "button"
+        );
+
 
     botaoAdicionar.type =
         "button";
 
+
     botaoAdicionar.className =
         "botao-principal";
 
-    botaoAdicionar.innerHTML =
+
+    botaoAdicionar.textContent =
         "📸 Adicionar fotos";
 
 
@@ -412,18 +1018,19 @@ function renderizarConteudoAlbum(album) {
     );
 
 
-    /* ====================================================
+    /* ========================================================
        SELECIONAR FOTOS
-    ==================================================== */
+    ======================================================== */
 
     inputFoto.addEventListener(
         "change",
-        evento => {
+        async evento => {
 
-            processarFotos(
+            await processarFotos(
                 evento.target.files,
                 album
             );
+
 
             inputFoto.value =
                 "";
@@ -431,20 +1038,25 @@ function renderizarConteudoAlbum(album) {
     );
 
 
-    /* ====================================================
+    /* ========================================================
        BOTÃO EDITAR
-    ==================================================== */
+    ======================================================== */
 
     const botaoEditar =
-        document.createElement("button");
+        document.createElement(
+            "button"
+        );
+
 
     botaoEditar.type =
         "button";
 
+
     botaoEditar.className =
         "botao-secundario";
 
-    botaoEditar.innerHTML =
+
+    botaoEditar.textContent =
         "✏️ Editar informações";
 
 
@@ -461,31 +1073,39 @@ function renderizarConteudoAlbum(album) {
     );
 
 
-    /* ====================================================
+    /* ========================================================
        AÇÕES
-    ==================================================== */
+    ======================================================== */
 
     const acoes =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     acoes.className =
         "acoes-edicao";
 
+
     acoes.appendChild(
         botaoAdicionar
     );
+
 
     acoes.appendChild(
         botaoEditar
     );
 
 
-    /* ====================================================
+    /* ========================================================
        GALERIA
-    ==================================================== */
+    ======================================================== */
 
     const galeria =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     galeria.className =
         "galeria";
@@ -495,49 +1115,64 @@ function renderizarConteudoAlbum(album) {
         (foto, indice) => {
 
             const item =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
+
 
             item.className =
                 "galeria-item";
 
 
-            /* ================================================
+            /* =================================================
                IMAGEM
             ================================================= */
 
             const imagem =
-                document.createElement("img");
+                document.createElement(
+                    "img"
+                );
+
 
             imagem.src =
-                foto;
+                criarUrlFoto(
+                    foto
+                );
+
 
             imagem.alt =
                 `${album.nome || "Foto"} ${indice + 1}`;
 
 
-            /* ================================================
+            /* =================================================
                BOTÃO APAGAR
             ================================================= */
 
             const botaoApagar =
-                document.createElement("button");
+                document.createElement(
+                    "button"
+                );
+
 
             botaoApagar.type =
                 "button";
 
-            botaoApagar.innerHTML =
-                "🗑️";
-
-            botaoApagar.title =
-                "Apagar foto";
 
             botaoApagar.className =
                 "botao-apagar-foto";
 
 
+            botaoApagar.textContent =
+                "🗑️";
+
+
+            botaoApagar.title =
+                "Apagar foto";
+
+
             botaoApagar.addEventListener(
                 "click",
-                evento => {
+                async evento => {
 
                     evento.stopPropagation();
 
@@ -553,9 +1188,9 @@ function renderizarConteudoAlbum(album) {
                     }
 
 
-                    /* ========================================
-                       APAGAR FOTO
-                    ======================================== */
+                    /* =========================================
+                       APAGAR
+                    ========================================= */
 
                     album.fotos.splice(
                         indice,
@@ -563,32 +1198,49 @@ function renderizarConteudoAlbum(album) {
                     );
 
 
-                    /* ========================================
-                       SE ERA A CAPA
-                    ======================================== */
+                    /* =========================================
+                       ATUALIZAR CAPA
+                    ========================================= */
 
                     if (
-                        album.capa === foto
+                        album.capa ===
+                        foto
                     ) {
 
-                        if (
+                        album.capa =
                             album.fotos.length > 0
-                        ) {
-
-                            album.capa =
-                                album.fotos[0];
-
-                        } else {
-
-                            album.capa =
-                                "";
-                        }
+                                ? album.fotos[0]
+                                : null;
                     }
 
 
-                    /* ========================================
-                       ATUALIZAR TELA
-                    ======================================== */
+                    /* =========================================
+                       SALVAR
+                    ========================================= */
+
+                    try {
+
+                        await salvarAlbum(
+                            album
+                        );
+
+                    } catch (erro) {
+
+                        console.error(
+                            erro
+                        );
+
+                        alert(
+                            "Não foi possível salvar a exclusão da foto."
+                        );
+
+                        return;
+                    }
+
+
+                    /* =========================================
+                       ATUALIZAR
+                    ========================================= */
 
                     renderizarAlbuns();
 
@@ -599,8 +1251,8 @@ function renderizarConteudoAlbum(album) {
             );
 
 
-            /* ================================================
-               ABRIR FOTO GRANDE
+            /* =================================================
+               FOTO GRANDE
             ================================================= */
 
             item.addEventListener(
@@ -619,6 +1271,7 @@ function renderizarConteudoAlbum(album) {
                 imagem
             );
 
+
             item.appendChild(
                 botaoApagar
             );
@@ -631,22 +1284,28 @@ function renderizarConteudoAlbum(album) {
     );
 
 
-    /* ====================================================
-       ÁLBUM SEM FOTOS
-    ==================================================== */
+    /* ========================================================
+       SEM FOTOS
+    ======================================================== */
 
     if (
-        album.fotos.length === 0
+        album.fotos.length ===
+        0
     ) {
 
         const vazio =
-            document.createElement("p");
+            document.createElement(
+                "p"
+            );
+
 
         vazio.className =
             "descricao";
 
+
         vazio.textContent =
             "Ainda não existem fotos neste lugar.";
+
 
         galeria.appendChild(
             vazio
@@ -654,25 +1313,34 @@ function renderizarConteudoAlbum(album) {
     }
 
 
-    /* ====================================================
-       MONTAR CONTEÚDO
-    ==================================================== */
+    /* ========================================================
+       MONTAR
+    ======================================================== */
 
     conteudoAlbum.appendChild(
         titulo
     );
 
+
     conteudoAlbum.appendChild(
         descricao
     );
+
+
+    conteudoAlbum.appendChild(
+        contador
+    );
+
 
     conteudoAlbum.appendChild(
         acoes
     );
 
+
     conteudoAlbum.appendChild(
         inputFoto
     );
+
 
     conteudoAlbum.appendChild(
         galeria
@@ -684,7 +1352,7 @@ function renderizarConteudoAlbum(album) {
    PROCESSAR FOTOS
 ============================================================ */
 
-function processarFotos(
+async function processarFotos(
     arquivos,
     album
 ) {
@@ -693,6 +1361,7 @@ function processarFotos(
         !arquivos ||
         arquivos.length === 0
     ) {
+
         return;
     }
 
@@ -723,64 +1392,126 @@ function processarFotos(
         );
 
 
-    arquivosSelecionados.forEach(
-        arquivo => {
+    /* ========================================================
+       ADICIONAR CADA FOTO
+    ======================================================== */
+
+    for (
+        const arquivo of arquivosSelecionados
+    ) {
+
+        if (
+            !arquivo.type.startsWith(
+                "image/"
+            )
+        ) {
+
+            continue;
+        }
+
+
+        try {
+
+            /*
+             * O IndexedDB consegue guardar
+             * o próprio arquivo Blob.
+             *
+             * Não precisamos transformar
+             * a foto em Base64.
+             */
+
+            const foto =
+                new Blob(
+                    [arquivo],
+                    {
+                        type:
+                            arquivo.type
+                    }
+                );
+
+
+            album.fotos.push(
+                foto
+            );
+
+
+            /* ===============================================
+               PRIMEIRA FOTO = CAPA
+            =============================================== */
 
             if (
-                !arquivo.type.startsWith(
-                    "image/"
-                )
+                !album.capa
             ) {
-                return;
+
+                album.capa =
+                    foto;
             }
 
 
-            const leitor =
-                new FileReader();
+            /* ===============================================
+               SALVAR NO INDEXEDDB
+            =============================================== */
 
-
-            leitor.onload =
-                evento => {
-
-                    album.fotos.push(
-                        evento.target.result
-                    );
-
-
-                    /* =========================================
-                       PRIMEIRA FOTO VIRA CAPA
-                    ========================================= */
-
-                    if (
-                        !album.capa
-                    ) {
-
-                        album.capa =
-                            evento.target.result;
-                    }
-
-
-                    renderizarAlbuns();
-
-
-                    if (
-                        albumAtual ===
-                        album.id
-                    ) {
-
-                        renderizarConteudoAlbum(
-                            album
-                        );
-                    }
-                };
-
-
-            leitor.readAsDataURL(
-                arquivo
+            await salvarAlbum(
+                album
             );
-        }
-    );
 
+
+            /* ===============================================
+               ATUALIZAR TELA
+            =============================================== */
+
+            renderizarAlbuns();
+
+
+            if (
+                albumAtual ===
+                album.id
+            ) {
+
+                renderizarConteudoAlbum(
+                    album
+                );
+            }
+
+        } catch (erro) {
+
+            console.error(
+                "Erro ao salvar foto:",
+                erro
+            );
+
+
+            /*
+             * Remove a foto se não conseguiu
+             * gravar no banco.
+             */
+
+            album.fotos.pop();
+
+
+            if (
+                album.fotos.length ===
+                0
+            ) {
+
+                album.capa =
+                    null;
+            }
+
+
+            alert(
+                "Não foi possível salvar esta foto."
+            );
+
+            break;
+        }
+    }
+
+
+    /* ========================================================
+       LIMITE
+    ======================================================== */
 
     if (
         arquivos.length >
@@ -788,7 +1519,7 @@ function processarFotos(
     ) {
 
         alert(
-            `Foram selecionadas mais fotos do que o limite disponível. Apenas ${quantidadeDisponivel} serão adicionadas.`
+            `Apenas ${quantidadeDisponivel} foto(s) foram adicionadas porque este álbum atingiu o limite.`
         );
     }
 }
@@ -804,53 +1535,75 @@ function abrirFotoGrande(
 ) {
 
     const modalFoto =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     modalFoto.className =
         "modal ativo";
 
 
     const conteudo =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     conteudo.className =
         "modal-conteudo";
+
 
     conteudo.style.textAlign =
         "center";
 
 
     const fechar =
-        document.createElement("button");
+        document.createElement(
+            "button"
+        );
+
 
     fechar.type =
         "button";
 
+
     fechar.className =
         "fechar-modal";
 
-    fechar.innerHTML =
+
+    fechar.textContent =
         "×";
 
 
     const imagem =
-        document.createElement("img");
+        document.createElement(
+            "img"
+        );
+
 
     imagem.src =
-        foto;
+        criarUrlFoto(
+            foto
+        );
+
 
     imagem.alt =
         nomeAlbum ||
         "Foto";
 
+
     imagem.style.width =
         "100%";
+
 
     imagem.style.maxHeight =
         "75vh";
 
+
     imagem.style.objectFit =
         "contain";
+
 
     imagem.style.borderRadius =
         "16px";
@@ -884,13 +1637,16 @@ function abrirFotoGrande(
         fechar
     );
 
+
     conteudo.appendChild(
         imagem
     );
 
+
     modalFoto.appendChild(
         conteudo
     );
+
 
     document.body.appendChild(
         modalFoto
@@ -907,8 +1663,10 @@ function abrirEdicao(id) {
     const album =
         albuns.find(
             item =>
-                item.id === id
+                Number(item.id) ===
+                Number(id)
         );
+
 
     if (!album) {
         return;
@@ -931,10 +1689,12 @@ function abrirEdicao(id) {
         "ativo"
     );
 
+
     modalEdicao.setAttribute(
         "aria-hidden",
         "false"
     );
+
 
     document.body.style.overflow =
         "hidden";
@@ -942,14 +1702,15 @@ function abrirEdicao(id) {
 
 
 /* ============================================================
-   SALVAR EDIÇÃO
+   SALVAR NOME E DESCRIÇÃO
 ============================================================ */
 
-function salvarAlteracoes() {
+async function salvarAlteracoes() {
 
     if (
         albumAtual === null
     ) {
+
         return;
     }
 
@@ -957,7 +1718,8 @@ function salvarAlteracoes() {
     const album =
         albuns.find(
             item =>
-                item.id === albumAtual
+                Number(item.id) ===
+                Number(albumAtual)
         );
 
 
@@ -966,24 +1728,49 @@ function salvarAlteracoes() {
     }
 
 
-    const novoNome =
+    album.nome =
         nomeLugar.value.trim();
 
 
-    const novaDescricao =
+    album.descricao =
         descricaoLugar.value.trim();
 
 
-    album.nome =
-        novoNome;
+    /* ========================================================
+       SALVAR NO INDEXEDDB
+    ======================================================== */
+
+    try {
+
+        await salvarAlbum(
+            album
+        );
+
+    } catch (erro) {
+
+        console.error(
+            erro
+        );
 
 
-    album.descricao =
-        novaDescricao;
+        alert(
+            "Não foi possível salvar as informações do álbum."
+        );
 
+        return;
+    }
+
+
+    /* ========================================================
+       FECHAR
+    ======================================================== */
 
     fecharModalEdicao();
 
+
+    /* ========================================================
+       ATUALIZAR
+    ======================================================== */
 
     renderizarAlbuns();
 
@@ -1007,14 +1794,21 @@ function salvarAlteracoes() {
 
 function fecharModalAlbum() {
 
+    if (!modalAlbum) {
+        return;
+    }
+
+
     modalAlbum.classList.remove(
         "ativo"
     );
+
 
     modalAlbum.setAttribute(
         "aria-hidden",
         "true"
     );
+
 
     document.body.style.overflow =
         "";
@@ -1027,14 +1821,21 @@ function fecharModalAlbum() {
 
 function fecharModalEdicao() {
 
+    if (!modalEdicao) {
+        return;
+    }
+
+
     modalEdicao.classList.remove(
         "ativo"
     );
+
 
     modalEdicao.setAttribute(
         "aria-hidden",
         "true"
     );
+
 
     document.body.style.overflow =
         "";
@@ -1042,7 +1843,7 @@ function fecharModalEdicao() {
 
 
 /* ============================================================
-   EVENTOS DOS BOTÕES
+   BOTÕES
 ============================================================ */
 
 if (fecharModal) {
@@ -1122,7 +1923,7 @@ if (modalEdicao) {
 
 
 /* ============================================================
-   TECLA ESC
+   ESC
 ============================================================ */
 
 document.addEventListener(
